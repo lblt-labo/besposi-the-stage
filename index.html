@@ -85,8 +85,12 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <div><label for="startT">🎬 開演時間</label><input type="time" id="startT"></div></div>
 <p class="hint" id="timeHint"></p>
 
+<label>★ マイ劇場（お気に入り・最大10件）</label>
+<div class="chips" id="favs"></div>
+<p class="hint" id="favHint"></p>
 <label for="region">地域</label><select id="region"></select>
 <label for="theater">劇場</label><select id="theater"></select>
+<button type="button" class="chip" id="favBtn" style="margin-top:.5rem" hidden>☆ この劇場をお気に入りに追加</button>
 <p class="hint">リストにない劇場は「✏ 劇場名を手入力する」から追加できます。</p>
 <div id="manualBox" hidden><label for="manual">✏ 劇場名を手入力</label><input type="text" id="manual" maxlength="40" placeholder="例：下北沢 本多劇場"></div>
 <button type="button" class="chip" id="delTh" hidden style="margin-top:.5rem">🗑 この手入力履歴を削除</button>
@@ -141,6 +145,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <div class="modal" id="mHelp"><div class="box"><h2>使い方</h2><ol>
 <li>作品名、観劇日、公演区分（マチネ／ソワレ）、開場・開演時間を入力します。開場から開演までの時間は、お手洗いや立ち回りの目安になります。作品名は次回から候補に出ます。</li>
 <li>地方ブロックから劇場を選びます。リストにない劇場は「✏ 劇場名を手入力する」で追加でき、次回から「★」付きで選べます。</li>
+<li>よく行く劇場は「☆ この劇場をお気に入りに追加」で最大10件まで「★ マイ劇場」に登録できます。入力画面の上部に並び、ワンタップで劇場を選べます。もう一度押すと解除できます。</li>
 <li>「🚻 劇場のトイレ情報メモ」に、穴場の位置・個室の多さ・幕間の混雑などを劇場ごとに残せます。次回同じ劇場を選ぶと表示されます。</li>
 <li>階数と座席区分を選び、グランドサークルなど名前に当てはまらない席は「特殊座席」に自由に書き込めます。</li>
 <li>座席は2つの方法から選べます。
@@ -169,7 +174,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 document.addEventListener('DOMContentLoaded',function(){
 var $=function(id){return document.getElementById(id);};
 var K='besupoji_stage_v1',MAN='__manual__';
-var S={entries:[],customTheaters:[],theaterInfo:{},glasses:[],region:'東京・関東',passOn:false,pass:'',installDismissed:false};
+var S={entries:[],customTheaters:[],theaterInfo:{},favs:[],glasses:[],region:'東京・関東',passOn:false,pass:'',installDismissed:false};
 var PRE={
 '北海道・東北':[
  ['北海道',['札幌文化芸術劇場 hitaru','札幌コンサートホール Kitara','北海道四季劇場']],
@@ -253,6 +258,8 @@ function load(){try{var r=localStorage.getItem(K);if(r){var o=JSON.parse(r);if(o
  if(!S.theaterInfo||typeof S.theaterInfo!=='object'||Array.isArray(S.theaterInfo))S.theaterInfo={};
  Object.keys(S.theaterInfo).forEach(function(k){var v=S.theaterInfo[k];if(v&&typeof v==='object'){var t=[v.toilet,v.crowd].filter(Boolean).join('／');if(t)S.theaterInfo[k]=t;else delete S.theaterInfo[k];}else if(typeof v!=='string'||!v){delete S.theaterInfo[k];}});
  S.customTheaters=S.customTheaters.map(function(c){return {n:c&&c.n,r:normRegion(c&&c.r)};}).filter(function(c){return c.n;});
+ if(!Array.isArray(S.favs))S.favs=[];
+ S.favs=S.favs.map(function(f){return {n:f&&f.n,r:normRegion(f&&f.r)};}).filter(function(f){return f.n;}).slice(0,10);
  S.entries=S.entries.filter(function(e){return e&&typeof e==='object';});
  S.entries.forEach(function(e){if(e.slot==='昼公演')e.slot='マチネ（昼公演）';else if(e.slot==='夜公演')e.slot='ソワレ（夜公演）';});
  S.region=normRegion(S.region);}
@@ -282,11 +289,24 @@ function putInfo(){
  if(t)S.theaterInfo[n]=t;else delete S.theaterInfo[n];
  return true;
 }
+function isFav(n){return S.favs.some(function(f){return f.n===n;});}
+function renderFavs(){
+ var box=$('favs'),fb=$('favBtn');if(!box||!fb)return;
+ box.innerHTML='';var cur=theaterName();
+ S.favs.forEach(function(f){
+  var b=document.createElement('button');b.type='button';b.className='chip';
+  var on=(f.n===cur);b.setAttribute('aria-pressed',on?'true':'false');
+  b.textContent=(on?'✓ ':'')+'★ '+f.n;
+  b.onclick=function(){$('region').value=normRegion(f.r);S.region=$('region').value;save();fillTheaters(f.n);};
+  box.appendChild(b);});
+ $('favHint').textContent=S.favs.length?S.favs.length+' / 10 件　タップでその劇場を選択':'まだありません。劇場を選んで「☆ この劇場をお気に入りに追加」を押すと、ここからワンタップで選べます。';
+ fb.hidden=!cur;fb.textContent=isFav(cur)?'★ お気に入りを解除':'☆ この劇場をお気に入りに追加';
+}
 function syncMan(){
  var t=$('theater'),r=$('region');if(!t||!r)return;
  $('manualBox').hidden=(t.value!==MAN);
  $('delTh').hidden=!isCustom(t.value,r.value);
- loadInfo();
+ loadInfo();renderFavs();
 }
 function fillTheaters(sel){
  var r=$('region').value,t=$('theater');t.innerHTML='';
@@ -411,16 +431,24 @@ function initUI(){
  $('date').value=today();
  fillTheaters();fillGlass('');filterSel();dl('titleList',titles());setMode('pin');
 }
+function toggleFav(){
+ var n=theaterName();if(!n){toast('劇場を選んでください');return;}
+ var r=$('region').value;
+ if(isFav(n)){S.favs=S.favs.filter(function(f){return f.n!==n;});save();renderFavs();toast('お気に入りを解除しました');return;}
+ if(S.favs.length>=10){toast('お気に入りは最大10件までです');return;}
+ if(flat(r).indexOf(n)<0&&!isCustom(n,r))S.customTheaters.push({n:n,r:r});
+ S.favs.push({n:n,r:r});save();fillTheaters(n);toast('★ お気に入りに追加しました');
+}
 function bind(){
  $('openT').oninput=timeHint;$('startT').oninput=timeHint;timeHint();
  $('region').onchange=function(){S.region=$('region').value;save();fillTheaters();};
- $('theater').onchange=syncMan;$('manual').oninput=loadInfo;
+ $('theater').onchange=syncMan;$('manual').oninput=function(){loadInfo();renderFavs();};$('favBtn').onclick=toggleFav;
  $('mPin').onclick=function(){setMode('pin');};$('mRange').onclick=function(){setMode('range');};
  $('saveInfo').onclick=function(){if(!putInfo()){toast('劇場を選んでください');return;}if(save())toast('🏛 劇場情報を保存しました');};
  $('delTh').onclick=function(){
   var n=$('theater').value,r=$('region').value;
   S.customTheaters=S.customTheaters.filter(function(c){return !(c.n===n&&c.r===r);});
-  save();fillTheaters();toast('履歴から削除しました（記録は残ります）');};
+  S.favs=S.favs.filter(function(f){return f.n!==n;});save();fillTheaters();toast('履歴から削除しました（お気に入りからも外れます。記録は残ります）');};
  $('btnGlass').onclick=function(){renderGlasses();$('mGlass').classList.add('show');};
  $('gAdd').onclick=function(){var v=$('gName').value.trim();if(!v)return;
   if(S.glasses.indexOf(v)>=0){toast('登録済みです');return;}
