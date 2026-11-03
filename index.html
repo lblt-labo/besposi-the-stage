@@ -132,7 +132,11 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 
 <section id="secList" hidden>
 <input type="search" id="q" placeholder="🔍 作品名・劇場・日付・メモで検索" aria-label="検索">
-<label for="ftitle">作品名で絞り込み</label><select id="ftitle"></select>
+<div class="row2"><div><label for="ftheater">🏛 劇場で絞り込み</label><select id="ftheater"></select></div>
+<div><label for="ftitle">🎫 作品名で絞り込み</label><select id="ftitle"></select></div></div>
+<div class="row2"><div><label for="fsort">↕ 並び順</label><select id="fsort"></select></div>
+<div><label>&nbsp;</label><button type="button" class="chip" id="fclear" style="width:100%">条件をクリア</button></div></div>
+<p class="hint" id="fcount"></p>
 <div id="list" style="margin-top:.8rem"></div>
 </section>
 <section id="secToilet" hidden>
@@ -167,7 +171,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
  <br>📍 <b>ピンポイント</b>：「この1席！」（例：G列 12番）
  <br>🗺 <b>エリア</b>：「この辺なら観やすい！」（例：H〜L列 ／ 10〜18番）</li>
 <li>通路へのアクセス（幕間にすぐ出られるか等）と、使ったオペラグラスの見え方も残せます。オペラグラスは「マイリスト」に登録しておくと選ぶだけです。</li>
-<li>「マイ・カルテ」で検索・絞り込み・編集・削除ができます。</li>
+<li>「マイ・カルテ」では、劇場や作品名をプルダウンで選ぶだけでワンタップで絞り込めます。観劇日の新しい順・古い順の並べ替えや、文字での検索、編集・削除もできます。</li>
 <li>⚙からパスコードロックのON/OFFと変更ができます（初期はオフ）。</li>
 <li>データはこの端末のブラウザ内にだけ保存されます。</li></ol>
 <button class="btn" data-close="mHelp">とじる</button></div></div>
@@ -451,11 +455,14 @@ function allText(e){
 function renderList(){
  var box=$('list');if(!box)return;box.innerHTML='';
  try{
-  var q=($('q').value||'').toLowerCase(),f=$('ftitle').value;
+  var q=($('q').value||'').toLowerCase(),f=$('ftitle').value,ft=$('ftheater').value,asc=($('fsort').value==='asc');
   var arr=S.entries.filter(function(e){
    if(f&&e.title!==f)return false;
+   if(ft&&e.theater!==ft)return false;
    return !q||allText(e).indexOf(q)>=0;});
-  arr.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||(b.ts||0)-(a.ts||0);});
+  var key=function(e){return String(e.date||'')+' '+String(e.startT||e.openT||'');};
+  arr.sort(function(a,b){var c=key(a).localeCompare(key(b));if(!c)c=(a.ts||0)-(b.ts||0);return asc?c:-c;});
+  $('fcount').textContent=arr.length+'件 / 全'+S.entries.length+'件';
   if(!arr.length){var p=document.createElement('p');p.className='empty';p.textContent=S.entries.length?'🔍 見つかりませんでした':'🎟 まだ記録がありません';box.appendChild(p);return;}
   arr.forEach(function(e){
    var c=document.createElement('div');c.className='card';
@@ -489,7 +496,16 @@ function startEdit(e){
  else{setMode('pin');$('row').value=e.row||'';$('num').value=e.num||'';}
  $('save').textContent='💾 更新する';$('cancel').hidden=false;timeHint();window.scrollTo(0,0);
 }
-function filterSel(){var s=$('ftitle');if(!s)return;var v=s.value;s.innerHTML='';opt(s,'','すべて');titles().forEach(function(n){opt(s,n,n);});s.value=v;}
+function fillFilter(id,list){
+ var s=$(id);if(!s)return;var v=s.value;s.innerHTML='';opt(s,'','すべて');
+ list.slice().sort(function(a,b){return a.localeCompare(b,'ja');}).forEach(function(n){opt(s,n,n);});
+ s.value=v;if(s.selectedIndex<0)s.selectedIndex=0;
+}
+function filterSel(){
+ fillFilter('ftitle',titles());
+ var t=[];S.entries.forEach(function(e){if(e.theater&&t.indexOf(e.theater)<0)t.push(e.theater);});
+ fillFilter('ftheater',t);
+}
 
 function initUI(){
  fill('region',REG);$('region').value=S.region;
@@ -503,6 +519,7 @@ function initUI(){
  fill('rf',[''].concat(ROWL),rl);fill('rt',[''].concat(ROWL),rl);
  fill('nf',[''].concat(NUMS),nl);fill('nt',[''].concat(NUMS),nl);
  $('date').value=today();
+ fill('fsort',['desc','asc'],function(v){return v==='desc'?'📅 観劇日が新しい順':'📅 観劇日が古い順';});
  fillTheaters();fillGlass('');filterSel();dl('titleList',titles());setMode('pin');
 }
 function toggleFav(){
@@ -531,7 +548,8 @@ function bind(){
  $('tabAdd').onclick=function(){tab('add');};$('tabList').onclick=function(){filterSel();tab('list');};$('tabToilet').onclick=function(){tab('toilet');};
  $('tAddBtn').onclick=function(){openTEdit('');};$('tCancel').onclick=function(){$('tEdit').hidden=true;tEditing=null;};$('tSave').onclick=saveT;$('tq').oninput=renderToilet;
  $('save').onclick=saveEntry;$('cancel').onclick=function(){resetForm();fillTheaters();};
- $('q').oninput=renderList;$('ftitle').onchange=renderList;
+ $('q').oninput=renderList;$('ftitle').onchange=renderList;$('ftheater').onchange=renderList;$('fsort').onchange=renderList;
+ $('fclear').onclick=function(){$('q').value='';$('ftitle').value='';$('ftheater').value='';$('fsort').value='desc';renderList();};
  $('btnHelp').onclick=function(){$('mHelp').classList.add('show');};
  $('btnSet').onclick=function(){$('passOn').checked=!!S.passOn;$('passIn').value='';$('mSet').classList.add('show');};
  Array.prototype.forEach.call(document.querySelectorAll('[data-close]'),function(b){b.onclick=function(){var m=$(b.getAttribute('data-close'));if(m)m.classList.remove('show');};});
