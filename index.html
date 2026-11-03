@@ -31,8 +31,8 @@ nav button.on{background:var(--acc);color:#fff;border-color:var(--accl)}
 main{padding:.8rem;max-width:560px;margin:0 auto}
 .ticket{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:.9rem}
 label{display:block;font-weight:700;font-size:.85rem;margin:.8rem 0 .25rem;color:var(--accl)}
-select,input[type=text],input[type=date],input[type=search],input[type=password],textarea{width:100%;min-height:48px;padding:.5rem .7rem;background:var(--inp);border:2px solid var(--bd);border-radius:10px;color:var(--txt)}
-input[type=date]{color-scheme:dark}
+select,input[type=text],input[type=date],input[type=time],input[type=search],input[type=password],textarea{width:100%;min-height:48px;padding:.5rem .7rem;background:var(--inp);border:2px solid var(--bd);border-radius:10px;color:var(--txt)}
+input[type=date],input[type=time]{color-scheme:dark}
 textarea{min-height:88px}
 .hint{font-size:.75rem;color:var(--mut);margin:.2rem 0 0}
 .row2{display:flex;gap:.5rem}.row2>div{flex:1}
@@ -81,17 +81,20 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <datalist id="titleList"></datalist>
 <div class="row2"><div><label for="date">📅 観劇日</label><input type="date" id="date"></div>
 <div><label for="slot">公演区分</label><select id="slot"></select></div></div>
+<div class="row2"><div><label for="openT">🚪 開場時間</label><input type="time" id="openT"></div>
+<div><label for="startT">🎬 開演時間</label><input type="time" id="startT"></div></div>
+<p class="hint" id="timeHint"></p>
 
 <label for="region">地域</label><select id="region"></select>
 <label for="theater">劇場</label><select id="theater"></select>
 <p class="hint">リストにない劇場は「✏ 劇場名を手入力する」から追加できます。</p>
 <div id="manualBox" hidden><label for="manual">✏ 劇場名を手入力</label><input type="text" id="manual" maxlength="40" placeholder="例：下北沢 本多劇場"></div>
 <button type="button" class="chip" id="delTh" hidden style="margin-top:.5rem">🗑 この手入力履歴を削除</button>
-<details id="infoBox"><summary>🏛 劇場付帯情報（お手洗い・混雑など）</summary>
- <label for="toilet">最も近いお手洗いの場所</label><input type="text" id="toilet" maxlength="80" placeholder="例：2階ロビー奥 / 1階客席後方">
- <label for="crowd">個室数・混雑傾向</label><input type="text" id="crowd" maxlength="80" placeholder="例：個室少なめ、幕間は長蛇の列">
- <button type="button" class="btn sub2" id="saveInfo">🏛 この劇場の情報を保存</button>
- <p class="hint">劇場ごとに保存され、次回同じ劇場を選ぶと表示されます。</p>
+<details id="infoBox"><summary>🚻 劇場のトイレ情報メモ（この劇場の永続メモ）</summary>
+ <label for="toilet">トイレ情報メモ</label>
+ <textarea id="toilet" maxlength="300" placeholder="例：穴場は3階西側のトイレ。個室は1階が多め。幕間は1階ロビーが長蛇の列、開演前に済ませるのがおすすめ。"></textarea>
+ <button type="button" class="btn sub2" id="saveInfo">🚻 この劇場のメモを保存</button>
+ <p class="hint">劇場ごとに保存され、同じ劇場を選ぶといつでも編集・参照できます。観劇カルテの一覧にも表示されます。</p>
 </details>
 
 <div class="row2"><div><label for="floor">階数</label><select id="floor"></select></div>
@@ -111,8 +114,8 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
  <p class="hint">列だけ・番号だけのエリア指定でもOKです。片方だけ選ぶと、その1つを指定します。</p>
 </div>
 
-<label for="aisle">🚪 通路・お手洗いへの行きやすさ</label><select id="aisle"></select>
-<input type="text" id="aisleMemo" maxlength="80" style="margin-top:.4rem" placeholder="例：通路まで2席、幕間に出やすい" aria-label="通路・お手洗いメモ">
+<label for="aisle">🚪 通路へのアクセス・座席からの出やすさ</label><select id="aisle"></select>
+<input type="text" id="aisleMemo" maxlength="80" style="margin-top:.4rem" placeholder="例：通路まで2席、幕間にトイレへすぐ行ける" aria-label="通路・お手洗いメモ">
 
 <label for="glass">🔭 オペラグラス</label>
 <div class="row2"><select id="glass" style="flex:1"></select><button type="button" class="chip" id="btnGlass" style="flex:none">🔭 マイリスト</button></div>
@@ -136,14 +139,14 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <button class="btn sub2" data-close="mGlass">とじる</button></div></div>
 
 <div class="modal" id="mHelp"><div class="box"><h2>使い方</h2><ol>
-<li>作品名と観劇日（昼・夜公演など）を入力します。作品名は次回から候補に出ます。</li>
+<li>作品名、観劇日、公演区分（マチネ／ソワレ）、開場・開演時間を入力します。開場から開演までの時間は、お手洗いや立ち回りの目安になります。作品名は次回から候補に出ます。</li>
 <li>地方ブロックから劇場を選びます。リストにない劇場は「✏ 劇場名を手入力する」で追加でき、次回から「★」付きで選べます。</li>
-<li>「🏛 劇場付帯情報」に、お手洗いの場所や混雑傾向を劇場ごとに保存できます。</li>
+<li>「🚻 劇場のトイレ情報メモ」に、穴場の位置・個室の多さ・幕間の混雑などを劇場ごとに残せます。次回同じ劇場を選ぶと表示されます。</li>
 <li>階数と座席区分を選び、グランドサークルなど名前に当てはまらない席は「特殊座席」に自由に書き込めます。</li>
 <li>座席は2つの方法から選べます。
  <br>📍 <b>ピンポイント</b>：「この1席！」（例：G列 12番）
  <br>🗺 <b>エリア</b>：「この辺なら観やすい！」（例：H〜L列 ／ 10〜18番）</li>
-<li>通路・お手洗いへの行きやすさと、使ったオペラグラスの見え方も残せます。オペラグラスは「マイリスト」に登録しておくと選ぶだけです。</li>
+<li>通路へのアクセス（幕間にすぐ出られるか等）と、使ったオペラグラスの見え方も残せます。オペラグラスは「マイリスト」に登録しておくと選ぶだけです。</li>
 <li>「マイ・カルテ」で検索・絞り込み・編集・削除ができます。</li>
 <li>⚙からパスコードロックのON/OFFと変更ができます（初期はオフ）。</li>
 <li>データはこの端末のブラウザ内にだけ保存されます。</li></ol>
@@ -166,39 +169,69 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 document.addEventListener('DOMContentLoaded',function(){
 var $=function(id){return document.getElementById(id);};
 var K='besupoji_stage_v1',MAN='__manual__';
-var S={entries:[],customTheaters:[],theaterInfo:{},glasses:[],region:'関東',passOn:false,pass:'',installDismissed:false};
+var S={entries:[],customTheaters:[],theaterInfo:{},glasses:[],region:'東京・関東',passOn:false,pass:'',installDismissed:false};
 var PRE={
 '北海道・東北':[
- ['北海道',['札幌文化芸術劇場 hitaru']],
- ['宮城',['東京エレクトロンホール宮城']]],
-'関東':[
- ['東京',['帝国劇場','日生劇場','東京宝塚劇場','東急シアターオーブ','東京国際フォーラム ホールC','新国立劇場 オペラパレス','新国立劇場 中劇場','歌舞伎座','明治座','東京芸術劇場 プレイハウス','四季劇場［春］','四季劇場［秋］','自由劇場','シアタークリエ','赤坂ACTシアター','世田谷パブリックシアター','PARCO劇場','本多劇場','サンシャイン劇場']],
- ['神奈川',['KAAT神奈川芸術劇場']],
- ['埼玉',['彩の国さいたま芸術劇場']],
- ['千葉',['舞浜アンフィシアター']]],
-'中部':[
- ['愛知',['御園座','愛知県芸術劇場 大ホール']]],
+ ['北海道',['札幌文化芸術劇場 hitaru','札幌コンサートホール Kitara','北海道四季劇場']],
+ ['青森',['リンクステーションホール青森']],
+ ['岩手',['岩手県民会館']],
+ ['宮城',['東京エレクトロンホール宮城','仙台銀行ホール イズミティ21']],
+ ['秋田',['あきた芸術劇場ミルハス']],
+ ['山形',['山形テルサ']],
+ ['福島',['福島市音楽堂']]],
+'東京・関東':[
+ ['東京',['帝国劇場','日生劇場','東京宝塚劇場','日本青年館ホール','東急シアターオーブ','東京国際フォーラム ホールC','東京国際フォーラム ホールA','新国立劇場 オペラパレス','新国立劇場 中劇場','新国立劇場 小劇場','歌舞伎座','明治座','新橋演舞場','東京芸術劇場 プレイハウス','東京芸術劇場 コンサートホール','四季劇場［春］','四季劇場［秋］','自由劇場','シアタークリエ','赤坂ACTシアター','世田谷パブリックシアター','PARCO劇場','Bunkamuraシアターコクーン','Bunkamuraオーチャードホール','本多劇場','紀伊國屋ホール','サンシャイン劇場','東京建物Brillia HALL','浅草公会堂','東京ガーデンシアター','NHKホール','日本武道館','サントリーホール','東京文化会館']],
+ ['神奈川',['KAAT神奈川芸術劇場','神奈川県民ホール','パシフィコ横浜 国立大ホール','横須賀芸術劇場']],
+ ['埼玉',['彩の国さいたま芸術劇場','大宮ソニックシティ','さいたまスーパーアリーナ']],
+ ['千葉',['四季劇場［海］','舞浜アンフィシアター','千葉県文化会館','市川市文化会館']],
+ ['茨城',['ザ・ヒロサワ・シティ会館']],
+ ['栃木',['栃木県総合文化センター メインホール']],
+ ['群馬',['高崎芸術劇場']]],
+'中部・東海':[
+ ['愛知',['御園座','中日劇場（2018年閉館）','愛知県芸術劇場 大ホール','日本特殊陶業市民会館 フォレストホール','名古屋国際会議場 センチュリーホール']],
+ ['静岡',['静岡市民文化会館 大ホール','浜松アクトシティ 大ホール','グランシップ']],
+ ['新潟',['りゅーとぴあ 劇場']],
+ ['長野',['まつもと市民芸術館']],
+ ['石川',['金沢歌劇座']],
+ ['富山',['オーバード・ホール']],
+ ['福井',['ハーモニーホールふくい']],
+ ['三重',['三重県総合文化センター 大ホール']]],
 '関西':[
- ['大阪',['梅田芸術劇場 メインホール','梅田芸術劇場 シアター・ドラマシティ','大阪四季劇場','新歌舞伎座','大阪松竹座']],
- ['兵庫',['宝塚大劇場','兵庫県立芸術文化センター KOBELCO大ホール']],
- ['京都',['京都四季劇場','南座']]],
+ ['大阪',['梅田芸術劇場 メインホール','梅田芸術劇場 シアター・ドラマシティ','大阪四季劇場','新歌舞伎座','大阪松竹座','オリックス劇場','フェスティバルホール','森ノ宮ピロティホール','サンケイホールブリーゼ','国立文楽劇場']],
+ ['兵庫',['宝塚大劇場','宝塚バウホール','兵庫県立芸術文化センター KOBELCO大ホール','神戸文化ホール','AiiA 2.5 Theater Kobe']],
+ ['京都',['京都劇場','南座','ロームシアター京都 メインホール','京都コンサートホール']],
+ ['滋賀',['びわ湖ホール 大ホール']],
+ ['和歌山',['和歌山県民文化会館']]],
 '中国・四国':[
- ['広島',['広島文化学園HBGホール']],
- ['香川',['レクザムホール 大ホール']]],
+ ['島根',['島根県民会館']],
+ ['岡山',['岡山芸術創造劇場 ハレノワ','岡山シンフォニーホール']],
+ ['広島',['広島文化学園HBGホール','広島上野学園ホール','JMSアステールプラザ']],
+ ['徳島',['あわぎんホール']],
+ ['香川',['レクザムホール 大ホール']],
+ ['愛媛',['愛媛県県民文化会館 ひめぎんホール']],
+ ['高知',['高知市文化プラザかるぽーと']]],
 '九州・沖縄':[
- ['福岡',['博多座','キャナルシティ劇場']],
- ['沖縄',['国立劇場おきなわ']]]};
+ ['福岡',['博多座','キャナルシティ劇場','福岡サンパレス']],
+ ['佐賀',['佐賀市文化会館']],
+ ['長崎',['長崎ブリックホール']],
+ ['熊本',['熊本城ホール メインホール','熊本県立劇場']],
+ ['大分',['iichiko総合文化センター']],
+ ['宮崎',['宮崎市民文化ホール']],
+ ['鹿児島',['鹿児島市民文化ホール']],
+ ['沖縄',['国立劇場おきなわ','那覇文化芸術劇場 なはーと','沖縄コンベンションセンター 劇場棟']]]};
 var REG=Object.keys(PRE);
-var SLOT=['昼公演','夜公演','その他'];
+var SLOT=['マチネ（昼公演）','ソワレ（夜公演）','その他'];
 var FLOOR=['','1階','2階','3階','4階','バルコニー','その他（特殊座席欄に記入）'];
 var CLS=['','S席','A席','B席','C席','注釈付き席'];
-var AISLE=['','通路横で出やすい','通路に近い','中央寄り','中央奥で出にくい'];
+var AISLE=['','通路横で幕間すぐ出られる','通路に近い','中央寄り','中央奥で出にくい'];
 var NUMS=[];for(var i=1;i<=50;i++)NUMS.push(String(i));
 var ROWL=NUMS.concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
 var mode='pin',editId=null,dp=null;
 
 function flat(r){var a=[];(PRE[r]||[]).forEach(function(g){a=a.concat(g[1]);});return a;}
-function normRegion(r){return REG.indexOf(r)>=0?r:'関東';}
+var OLDREG={'関東':'東京・関東','中部':'中部・東海'};
+function findRegion(th){for(var i=0;i<REG.length;i++){if(flat(REG[i]).indexOf(th)>=0)return REG[i];}return '';}
+function normRegion(r){if(OLDREG[r])r=OLDREG[r];return REG.indexOf(r)>=0?r:'東京・関東';}
 function norm(a,b,L){if(!a&&!b)return ['',''];a=a||b;b=b||a;return (L.indexOf(a)<=L.indexOf(b))?[a,b]:[b,a];}
 function span(a,b,u,L){if(!a&&!b)return '';var p=norm(a,b,L);return p[0]===p[1]?p[0]+u:p[0]+'〜'+p[1]+u;}
 function seatText(e){
@@ -208,6 +241,9 @@ function seatText(e){
  }
  return [e.row?e.row+'列':'',e.num?e.num+'番':''].filter(Boolean).join(' ')||'座席未入力';
 }
+function mins(t){var m=/^(\d{1,2}):(\d{2})$/.exec(t||'');return m?(+m[1])*60+(+m[2]):null;}
+function timeGap(a,b){var x=mins(a),y=mins(b);if(x===null||y===null||y<=x)return '';return '（開場から開演まで'+(y-x)+'分）';}
+function timeHint(){var g=timeGap($('openT').value,$('startT').value);$('timeHint').textContent=g?g.replace(/[（）]/g,''):'開場後のお手洗い利用や立ち回りの目安に使えます。';}
 function today(){try{var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}catch(e){return '';}}
 
 function toast(m){try{var t=$('toast');if(!t)return;t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}catch(e){}}
@@ -215,8 +251,10 @@ function load(){try{var r=localStorage.getItem(K);if(r){var o=JSON.parse(r);if(o
  if(!Array.isArray(S.entries))S.entries=[];if(!Array.isArray(S.glasses))S.glasses=[];
  if(!Array.isArray(S.customTheaters))S.customTheaters=[];
  if(!S.theaterInfo||typeof S.theaterInfo!=='object'||Array.isArray(S.theaterInfo))S.theaterInfo={};
+ Object.keys(S.theaterInfo).forEach(function(k){var v=S.theaterInfo[k];if(v&&typeof v==='object'){var t=[v.toilet,v.crowd].filter(Boolean).join('／');if(t)S.theaterInfo[k]=t;else delete S.theaterInfo[k];}else if(typeof v!=='string'||!v){delete S.theaterInfo[k];}});
  S.customTheaters=S.customTheaters.map(function(c){return {n:c&&c.n,r:normRegion(c&&c.r)};}).filter(function(c){return c.n;});
  S.entries=S.entries.filter(function(e){return e&&typeof e==='object';});
+ S.entries.forEach(function(e){if(e.slot==='昼公演')e.slot='マチネ（昼公演）';else if(e.slot==='夜公演')e.slot='ソワレ（夜公演）';});
  S.region=normRegion(S.region);}
 function save(){try{localStorage.setItem(K,JSON.stringify(S));return true;}catch(e){toast('⚠ 保存できませんでした');return false;}}
 function opt(sel,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;sel.appendChild(o);}
@@ -234,14 +272,14 @@ function setMode(m){
 }
 function theaterName(){var t=$('theater').value;return t===MAN?$('manual').value.trim():t;}
 function loadInfo(){
- var n=theaterName(),i=(n&&S.theaterInfo[n])||{};
- $('toilet').value=i.toilet||'';$('crowd').value=i.crowd||'';
- if(i.toilet||i.crowd)$('infoBox').open=true;
+ var n=theaterName(),t=(n&&S.theaterInfo[n])||'';
+ $('toilet').value=t;
+ if(t)$('infoBox').open=true;
 }
 function putInfo(){
  var n=theaterName();if(!n)return false;
- var t=$('toilet').value.trim(),c=$('crowd').value.trim();
- if(t||c||S.theaterInfo[n])S.theaterInfo[n]={toilet:t,crowd:c};
+ var t=$('toilet').value.trim();
+ if(t)S.theaterInfo[n]=t;else delete S.theaterInfo[n];
  return true;
 }
 function syncMan(){
@@ -283,11 +321,12 @@ function renderGlasses(){
   b.onclick=function(){S.glasses.splice(i,1);save();renderGlasses();fillGlass($('glass').value);};
   d.appendChild(s);d.appendChild(b);box.appendChild(d);});
 }
+function fillAisle(x){var a=AISLE.slice();if(x&&a.indexOf(x)<0)a.push(x);fill('aisle',a,function(v){return v||'（未選択）';});}
 function clearRange(){['rf','rt','nf','nt'].forEach(function(id){$(id).value='';});}
 function resetForm(){
- editId=null;['title','special','aisleMemo','glassMemo','memo','manual'].forEach(function(id){$(id).value='';});
+ editId=null;['title','special','aisleMemo','glassMemo','memo','manual','openT','startT'].forEach(function(id){$(id).value='';});
  $('date').value=today();$('slot').value=SLOT[0];$('floor').value='';$('cls').value='';$('aisle').value='';$('row').value='';$('num').value='';
- clearRange();fillGlass('');$('save').textContent='💾 観劇カルテを記録';$('cancel').hidden=true;
+ clearRange();fillGlass('');$('save').textContent='💾 観劇カルテを記録';$('cancel').hidden=true;timeHint();
 }
 function tab(a){$('secAdd').hidden=!a;$('secList').hidden=a;$('tabAdd').classList.toggle('on',a);$('tabList').classList.toggle('on',!a);if(!a)renderList();}
 
@@ -296,7 +335,7 @@ function saveEntry(){
   var r=$('region').value,th=theaterName(),ti=$('title').value.trim();
   if(!ti){toast('作品名を入力してください');return;}
   if(!th){toast('劇場を選ぶか、劇場名を入力してください');return;}
-  var e={id:editId||String(Date.now()),region:r,theater:th,title:ti,date:$('date').value,slot:$('slot').value,
+  var e={id:editId||String(Date.now()),region:r,theater:th,title:ti,date:$('date').value,slot:$('slot').value,openT:$('openT').value,startT:$('startT').value,
    floor:$('floor').value,cls:$('cls').value,special:$('special').value.trim(),mode:mode,
    aisle:$('aisle').value,aisleMemo:$('aisleMemo').value.trim(),glass:$('glass').value,glassMemo:$('glassMemo').value.trim(),
    memo:$('memo').value.trim(),ts:Date.now()};
@@ -313,7 +352,7 @@ function saveEntry(){
  }catch(err){toast('⚠ エラーが起きました');}
 }
 function allText(e){
- return [e.title,e.theater,e.date,e.slot,e.floor,e.cls,e.special,seatText(e),e.aisle,e.aisleMemo,e.glass,e.glassMemo,e.memo].join(' ').toLowerCase();
+ return [e.title,e.theater,e.date,e.slot,e.openT,e.startT,e.floor,e.cls,e.special,seatText(e),e.aisle,e.aisleMemo,e.glass,e.glassMemo,e.memo,S.theaterInfo[e.theater]||''].join(' ').toLowerCase();
 }
 function renderList(){
  var box=$('list');if(!box)return;box.innerHTML='';
@@ -328,11 +367,13 @@ function renderList(){
    var c=document.createElement('div');c.className='card';
    var h=document.createElement('h3');h.textContent='🎭 '+(e.title||'（作品名なし）');c.appendChild(h);
    var d=document.createElement('div');d.className='sm';d.textContent='📅 '+(e.date||'日付なし')+(e.slot?' '+e.slot:'')+'　🏛 '+e.theater;c.appendChild(d);
+   if(e.openT||e.startT){var tm=document.createElement('div');tm.className='sm';tm.textContent='⏰ '+(e.openT?'開場 '+e.openT:'')+(e.openT&&e.startT?' ／ ':'')+(e.startT?'開演 '+e.startT:'')+timeGap(e.openT,e.startT);c.appendChild(tm);}
    var s=document.createElement('div');s.className='seat';s.textContent=(e.mode==='range'?'🗺 ':'💺 ')+(e.floor?e.floor+' ':'')+seatText(e);c.appendChild(s);
    if(e.cls){var t1=document.createElement('span');t1.className='tag';t1.textContent=e.cls;c.appendChild(t1);}
    if(e.special){var t2=document.createElement('span');t2.className='tag sp';t2.textContent='✨ '+e.special;c.appendChild(t2);}
    if(e.aisle||e.aisleMemo){var a1=document.createElement('div');a1.className='memo';a1.textContent='🚪 '+[e.aisle,e.aisleMemo].filter(Boolean).join('／');c.appendChild(a1);}
    if(e.glass||e.glassMemo){var g=document.createElement('div');g.className='memo';g.textContent='🔭 '+[e.glass,e.glassMemo].filter(Boolean).join('：');c.appendChild(g);}
+   var ti=S.theaterInfo[e.theater];if(ti){var tt=document.createElement('div');tt.className='memo';tt.textContent='🚻 劇場のトイレ情報：'+ti;c.appendChild(tt);}
    if(e.memo){var m=document.createElement('div');m.className='memo';m.textContent='📝 '+e.memo;c.appendChild(m);}
    var a=document.createElement('div');a.className='acts';
    var b1=document.createElement('button');b1.textContent='✏ 編集';b1.onclick=function(){startEdit(e);};
@@ -344,15 +385,15 @@ function renderList(){
 }
 function startEdit(e){
  editId=e.id;tab(true);
- $('region').value=normRegion(e.region);fillTheaters(e.theater);
- $('title').value=e.title||'';$('date').value=e.date||'';$('slot').value=e.slot||SLOT[0];
+ $('region').value=findRegion(e.theater)||normRegion(e.region);fillTheaters(e.theater);
+ $('title').value=e.title||'';$('date').value=e.date||'';$('slot').value=e.slot||SLOT[0];$('openT').value=e.openT||'';$('startT').value=e.startT||'';
  $('floor').value=e.floor||'';$('cls').value=e.cls||'';$('special').value=e.special||'';
- $('aisle').value=e.aisle||'';$('aisleMemo').value=e.aisleMemo||'';
+ fillAisle(e.aisle);$('aisle').value=e.aisle||'';$('aisleMemo').value=e.aisleMemo||'';
  fillGlass(e.glass||'');$('glassMemo').value=e.glassMemo||'';$('memo').value=e.memo||'';
  clearRange();
  if(e.mode==='range'){setMode('range');$('rf').value=e.rowFrom||'';$('rt').value=e.rowTo||'';$('nf').value=e.numFrom||'';$('nt').value=e.numTo||'';}
  else{setMode('pin');$('row').value=e.row||'';$('num').value=e.num||'';}
- $('save').textContent='💾 更新する';$('cancel').hidden=false;window.scrollTo(0,0);
+ $('save').textContent='💾 更新する';$('cancel').hidden=false;timeHint();window.scrollTo(0,0);
 }
 function filterSel(){var s=$('ftitle');if(!s)return;var v=s.value;s.innerHTML='';opt(s,'','すべて');titles().forEach(function(n){opt(s,n,n);});s.value=v;}
 
@@ -361,7 +402,7 @@ function initUI(){
  fill('slot',SLOT);
  fill('floor',FLOOR,function(v){return v||'（未選択）';});
  fill('cls',CLS,function(v){return v||'（未選択）';});
- fill('aisle',AISLE,function(v){return v||'（未選択）';});
+ fillAisle('');
  fill('row',[''].concat(ROWL),function(v){return v?v+'列':'列を選ぶ';});
  fill('num',[''].concat(NUMS),function(v){return v?v+'番':'番号を選ぶ';});
  var rl=function(v){return v?v+'列':'指定なし';},nl=function(v){return v?v+'番':'指定なし';};
@@ -371,6 +412,7 @@ function initUI(){
  fillTheaters();fillGlass('');filterSel();dl('titleList',titles());setMode('pin');
 }
 function bind(){
+ $('openT').oninput=timeHint;$('startT').oninput=timeHint;timeHint();
  $('region').onchange=function(){S.region=$('region').value;save();fillTheaters();};
  $('theater').onchange=syncMan;$('manual').oninput=loadInfo;
  $('mPin').onclick=function(){setMode('pin');};$('mRange').onclick=function(){setMode('range');};
