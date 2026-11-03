@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ベスポジ！ the Stage</title>
+<meta name="description" content="劇場の座席体験と観劇メモを記録できるマイ・カルテ">
+<meta name="theme-color" content="#2b0d14">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ベスポジ！ the Stage">
+<meta property="og:description" content="劇場の座席体験と観劇メモを記録できるマイ・カルテ">
+<meta property="og:image" content="./ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ベスポジ！ the Stage">
+<meta name="twitter:image" content="./ogp.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root{--bg:#1b0a0e;--panel:#2a1117;--line:#6e2230;--acc:#8f1d33;--accl:#f2b8c0;--txt:#f8eeea;--mut:#d6bcc0;--inp:#12070a;--bd:#a97a84}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6;padding-bottom:env(safe-area-inset-bottom)}
+header{display:flex;justify-content:space-between;align-items:center;padding:calc(.5rem + env(safe-area-inset-top)) .8rem .5rem;border-bottom:2px dashed var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+h1{font-size:1.15rem;margin:0;color:var(--accl)}h1 small{display:block;font-size:.7rem;color:var(--mut);font-weight:400}
+.sub{margin:.5rem .9rem;font-size:.8rem;color:var(--mut)}
+button,select,input,textarea{font:inherit;color:inherit}
+.ib{min-width:44px;min-height:44px;border-radius:50%;border:2px solid var(--accl);background:var(--panel);font-size:1.1rem;margin-left:.3rem;cursor:pointer}
+nav{display:flex;gap:.4rem;padding:0 .8rem}
+nav button{flex:1;min-height:48px;border:2px solid var(--line);background:var(--panel);border-radius:10px 10px 0 0;font-weight:700;cursor:pointer}
+nav button.on{background:var(--acc);color:#fff;border-color:var(--accl)}
+main{padding:.8rem;max-width:560px;margin:0 auto}
+.ticket{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:.9rem}
+label{display:block;font-weight:700;font-size:.85rem;margin:.8rem 0 .25rem;color:var(--accl)}
+select,input[type=text],input[type=date],input[type=search],input[type=password],textarea{width:100%;min-height:48px;padding:.5rem .7rem;background:var(--inp);border:2px solid var(--bd);border-radius:10px;color:var(--txt)}
+input[type=date]{color-scheme:dark}
+textarea{min-height:88px}
+.hint{font-size:.75rem;color:var(--mut);margin:.2rem 0 0}
+.row2{display:flex;gap:.5rem}.row2>div{flex:1}
+.rng{display:flex;gap:.4rem;align-items:center}.rng span{font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{min-height:44px;padding:.3rem .8rem;border-radius:22px;border:2px solid var(--bd);background:var(--inp);cursor:pointer;font-size:.85rem}
+.chip[aria-pressed=true]{background:var(--acc);color:#fff;border-color:var(--accl);font-weight:700}
+.modes .chip{flex:1;min-width:140px}
+details{margin-top:.8rem;border:2px dashed var(--line);border-radius:10px;padding:.2rem .7rem .7rem}
+summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:var(--accl);cursor:pointer}
+.btn{min-height:50px;width:100%;margin-top:1rem;border:2px solid var(--accl);border-radius:12px;background:var(--acc);color:#fff;font-weight:800;font-size:1rem;cursor:pointer}
+.btn.sub2{background:var(--panel);color:var(--txt);border:2px solid var(--bd);margin-top:.5rem}
+.card{background:var(--panel);border:2px solid var(--line);border-left:8px solid #b02a42;border-radius:12px;padding:.7rem .9rem;margin-bottom:.7rem}
+.card h3{margin:0;font-size:1.05rem}.sm{font-size:.85rem;color:var(--mut)}
+.seat{font-size:1.15rem;font-weight:800;color:var(--accl);margin-top:.2rem}
+.tag{display:inline-block;border:1px solid var(--accl);border-radius:12px;padding:0 .6rem;font-size:.75rem;margin:.2rem .3rem .2rem 0}
+.tag.sp{border-style:dashed}
+.memo{font-size:.85rem;white-space:pre-wrap;word-break:break-word;margin-top:.2rem}
+.acts{display:flex;gap:.5rem;margin-top:.4rem}.acts button{flex:1;min-height:44px;border-radius:8px;border:2px solid var(--bd);background:var(--inp);cursor:pointer}
+.empty{text-align:center;color:var(--mut);padding:2rem 0}
+.modal,.lock{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:20;padding:1rem}
+.modal.show,.lock.show{display:flex}
+.box{background:var(--panel);border:2px solid var(--accl);border-radius:14px;padding:1rem;max-width:480px;width:100%;max-height:85vh;overflow:auto}
+.box h2{margin-top:0;color:var(--accl);font-size:1.1rem}.box li{margin-bottom:.4rem}
+.gl{display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--line);padding:.3rem 0}.gl span{flex:1;word-break:break-all}
+.gl button{min-height:44px;min-width:44px;border-radius:8px;border:2px solid var(--bd);background:var(--inp);cursor:pointer}
+#toast{position:fixed;left:50%;bottom:5rem;transform:translateX(-50%);background:#f8eeea;color:#2b0d14;padding:.6rem 1rem;border-radius:20px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:30}
+#toast.show{opacity:1}
+#inst{position:fixed;left:.6rem;right:.6rem;bottom:0;background:var(--accl);color:#2b0d14;border-radius:14px 14px 0 0;padding:.8rem;transform:translateY(110%);transition:transform .5s;z-index:15;display:flex;gap:.5rem;align-items:center}
+#inst.show{transform:translateY(0)}#inst p{margin:0;flex:1;font-size:.85rem;font-weight:700}
+#inst button{min-height:44px;min-width:44px;border-radius:8px;border:2px solid #2b0d14;background:#2b0d14;color:var(--accl);font-weight:700}
+.chk{display:flex;align-items:center;gap:.6rem;min-height:44px;font-weight:700}.chk input{width:28px;height:28px}
+</style>
+</head>
+<body>
+<header>
+<h1>🎭 ベスポジ！<small>the Stage</small></h1>
+<div><button class="ib" id="btnSet" aria-label="設定">⚙</button><button class="ib" id="btnHelp" aria-label="使い方">？</button></div>
+</header>
+<p class="sub">劇場の座席体験と観劇メモを記録できるマイ・カルテ</p>
+<nav role="tablist"><button id="tabAdd" class="on" role="tab">＋ 記録する</button><button id="tabList" role="tab">📒 マイ・カルテ</button></nav>
+<main>
+<section id="secAdd" class="ticket">
+<label for="title">🎫 作品名（演目）</label>
+<input type="text" id="title" list="titleList" maxlength="60" autocomplete="off" placeholder="例：レ・ミゼラブル">
+<datalist id="titleList"></datalist>
+<div class="row2"><div><label for="date">📅 観劇日</label><input type="date" id="date"></div>
+<div><label for="slot">公演区分</label><select id="slot"></select></div></div>
+
+<label for="region">地域</label><select id="region"></select>
+<label for="theater">劇場</label><select id="theater"></select>
+<p class="hint">リストにない劇場は「✏ 劇場名を手入力する」から追加できます。</p>
+<div id="manualBox" hidden><label for="manual">✏ 劇場名を手入力</label><input type="text" id="manual" maxlength="40" placeholder="例：下北沢 本多劇場"></div>
+<button type="button" class="chip" id="delTh" hidden style="margin-top:.5rem">🗑 この手入力履歴を削除</button>
+<details id="infoBox"><summary>🏛 劇場付帯情報（お手洗い・混雑など）</summary>
+ <label for="toilet">最も近いお手洗いの場所</label><input type="text" id="toilet" maxlength="80" placeholder="例：2階ロビー奥 / 1階客席後方">
+ <label for="crowd">個室数・混雑傾向</label><input type="text" id="crowd" maxlength="80" placeholder="例：個室少なめ、幕間は長蛇の列">
+ <button type="button" class="btn sub2" id="saveInfo">🏛 この劇場の情報を保存</button>
+ <p class="hint">劇場ごとに保存され、次回同じ劇場を選ぶと表示されます。</p>
+</details>
+
+<div class="row2"><div><label for="floor">階数</label><select id="floor"></select></div>
+<div><label for="cls">座席区分</label><select id="cls"></select></div></div>
+<label for="special">特殊座席・自由記述（任意）</label>
+<input type="text" id="special" maxlength="60" placeholder="例：グランドサークル / 上手バルコニー / 注釈付き（見切れあり）">
+
+<label>💺 座席の記録方法</label>
+<div class="chips modes"><button type="button" class="chip" id="mPin" aria-pressed="true">✓ 📍 ピンポイント（この1席）</button><button type="button" class="chip" id="mRange" aria-pressed="false">🗺 エリア（この辺ならOK）</button></div>
+<p class="hint" id="modeHint"></p>
+<div id="pinBox" class="row2"><div><label for="row">列</label><select id="row"></select></div><div><label for="num">番号</label><select id="num"></select></div></div>
+<div id="rangeBox" hidden>
+ <label>列のエリア</label>
+ <div class="rng"><select id="rf" aria-label="列のエリア から"></select><span>〜</span><select id="rt" aria-label="列のエリア まで"></select></div>
+ <label>番号のエリア</label>
+ <div class="rng"><select id="nf" aria-label="番号のエリア から"></select><span>〜</span><select id="nt" aria-label="番号のエリア まで"></select></div>
+ <p class="hint">列だけ・番号だけのエリア指定でもOKです。片方だけ選ぶと、その1つを指定します。</p>
+</div>
+
+<label for="aisle">🚪 通路・お手洗いへの行きやすさ</label><select id="aisle"></select>
+<input type="text" id="aisleMemo" maxlength="80" style="margin-top:.4rem" placeholder="例：通路まで2席、幕間に出やすい" aria-label="通路・お手洗いメモ">
+
+<label for="glass">🔭 オペラグラス</label>
+<div class="row2"><select id="glass" style="flex:1"></select><button type="button" class="chip" id="btnGlass" style="flex:none">🔭 マイリスト</button></div>
+<textarea id="glassMemo" maxlength="200" style="margin-top:.4rem" placeholder="その時の見え方メモ（例：表情までくっきり／手元は肉眼で十分）" aria-label="見え方メモ"></textarea>
+
+<label for="memo">📝 観劇メモ（自由記述）</label><textarea id="memo" maxlength="400" placeholder="例：前方でも首が疲れにくい。オケの音がよく聞こえる。"></textarea>
+<button class="btn" id="save">💾 観劇カルテを記録</button>
+<button class="btn sub2" id="cancel" hidden>編集をやめる</button>
+</section>
+
+<section id="secList" hidden>
+<input type="search" id="q" placeholder="🔍 作品名・劇場・日付・メモで検索" aria-label="検索">
+<label for="ftitle">作品名で絞り込み</label><select id="ftitle"></select>
+<div id="list" style="margin-top:.8rem"></div>
+</section>
+</main>
+
+<div class="modal" id="mGlass"><div class="box"><h2>🔭 マイ・オペラグラス</h2>
+<div class="row2"><input type="text" id="gName" maxlength="30" placeholder="例：Vixen 8倍 / 防振 12倍" aria-label="オペラグラス名"><button class="chip" id="gAdd" style="flex:none">＋登録</button></div>
+<div id="gList" style="margin-top:.6rem"></div>
+<button class="btn sub2" data-close="mGlass">とじる</button></div></div>
+
+<div class="modal" id="mHelp"><div class="box"><h2>使い方</h2><ol>
+<li>作品名と観劇日（昼・夜公演など）を入力します。作品名は次回から候補に出ます。</li>
+<li>地方ブロックから劇場を選びます。リストにない劇場は「✏ 劇場名を手入力する」で追加でき、次回から「★」付きで選べます。</li>
+<li>「🏛 劇場付帯情報」に、お手洗いの場所や混雑傾向を劇場ごとに保存できます。</li>
+<li>階数と座席区分を選び、グランドサークルなど名前に当てはまらない席は「特殊座席」に自由に書き込めます。</li>
+<li>座席は2つの方法から選べます。
+ <br>📍 <b>ピンポイント</b>：「この1席！」（例：G列 12番）
+ <br>🗺 <b>エリア</b>：「この辺なら観やすい！」（例：H〜L列 ／ 10〜18番）</li>
+<li>通路・お手洗いへの行きやすさと、使ったオペラグラスの見え方も残せます。オペラグラスは「マイリスト」に登録しておくと選ぶだけです。</li>
+<li>「マイ・カルテ」で検索・絞り込み・編集・削除ができます。</li>
+<li>⚙からパスコードロックのON/OFFと変更ができます（初期はオフ）。</li>
+<li>データはこの端末のブラウザ内にだけ保存されます。</li></ol>
+<button class="btn" data-close="mHelp">とじる</button></div></div>
+
+<div class="modal" id="mSet"><div class="box"><h2>設定</h2>
+<label class="chk"><input type="checkbox" id="passOn"> パスコードロックを使う</label>
+<label for="passIn">コード（数字4桁）</label><input type="password" id="passIn" inputmode="numeric" maxlength="4" placeholder="変更する時だけ入力">
+<button class="btn" id="setSave">設定を保存</button><button class="btn sub2" data-close="mSet">とじる</button></div></div>
+
+<div class="lock" id="lock"><div class="box"><h2>🔒 パスコード</h2>
+<input type="password" id="unlockIn" inputmode="numeric" maxlength="4" placeholder="4桁の数字" aria-label="パスコード">
+<p id="lockMsg" role="alert" style="color:#ffb3b3;min-height:1.4em;margin:.3rem 0"></p>
+<button class="btn" id="unlockBtn">ひらく</button></div></div>
+
+<div id="inst" role="dialog" aria-label="ホーム画面に追加"><p id="instTxt">ホーム画面に追加してアプリとして使う</p><button id="instGo">追加</button><button id="instX" aria-label="閉じる">✕</button></div>
+<div id="toast" role="status"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+var $=function(id){return document.getElementById(id);};
+var K='besupoji_stage_v1',MAN='__manual__';
+var S={entries:[],customTheaters:[],theaterInfo:{},glasses:[],region:'関東',passOn:false,pass:'',installDismissed:false};
+var PRE={
+'北海道・東北':[
+ ['北海道',['札幌文化芸術劇場 hitaru']],
+ ['宮城',['東京エレクトロンホール宮城']]],
+'関東':[
+ ['東京',['帝国劇場','日生劇場','東京宝塚劇場','東急シアターオーブ','東京国際フォーラム ホールC','新国立劇場 オペラパレス','新国立劇場 中劇場','歌舞伎座','明治座','東京芸術劇場 プレイハウス','四季劇場［春］','四季劇場［秋］','自由劇場','シアタークリエ','赤坂ACTシアター','世田谷パブリックシアター','PARCO劇場','本多劇場','サンシャイン劇場']],
+ ['神奈川',['KAAT神奈川芸術劇場']],
+ ['埼玉',['彩の国さいたま芸術劇場']],
+ ['千葉',['舞浜アンフィシアター']]],
+'中部':[
+ ['愛知',['御園座','愛知県芸術劇場 大ホール']]],
+'関西':[
+ ['大阪',['梅田芸術劇場 メインホール','梅田芸術劇場 シアター・ドラマシティ','大阪四季劇場','新歌舞伎座','大阪松竹座']],
+ ['兵庫',['宝塚大劇場','兵庫県立芸術文化センター KOBELCO大ホール']],
+ ['京都',['京都四季劇場','南座']]],
+'中国・四国':[
+ ['広島',['広島文化学園HBGホール']],
+ ['香川',['レクザムホール 大ホール']]],
+'九州・沖縄':[
+ ['福岡',['博多座','キャナルシティ劇場']],
+ ['沖縄',['国立劇場おきなわ']]]};
+var REG=Object.keys(PRE);
+var SLOT=['昼公演','夜公演','その他'];
+var FLOOR=['','1階','2階','3階','4階','バルコニー','その他（特殊座席欄に記入）'];
+var CLS=['','S席','A席','B席','C席','注釈付き席'];
+var AISLE=['','通路横で出やすい','通路に近い','中央寄り','中央奥で出にくい'];
+var NUMS=[];for(var i=1;i<=50;i++)NUMS.push(String(i));
+var ROWL=NUMS.concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+var mode='pin',editId=null,dp=null;
+
+function flat(r){var a=[];(PRE[r]||[]).forEach(function(g){a=a.concat(g[1]);});return a;}
+function normRegion(r){return REG.indexOf(r)>=0?r:'関東';}
+function norm(a,b,L){if(!a&&!b)return ['',''];a=a||b;b=b||a;return (L.indexOf(a)<=L.indexOf(b))?[a,b]:[b,a];}
+function span(a,b,u,L){if(!a&&!b)return '';var p=norm(a,b,L);return p[0]===p[1]?p[0]+u:p[0]+'〜'+p[1]+u;}
+function seatText(e){
+ if(e.mode==='range'){
+  var r=span(e.rowFrom,e.rowTo,'列',ROWL),n=span(e.numFrom,e.numTo,'番',NUMS);
+  return 'エリア：'+[r,n].filter(Boolean).join(' ／ ');
+ }
+ return [e.row?e.row+'列':'',e.num?e.num+'番':''].filter(Boolean).join(' ')||'座席未入力';
+}
+function today(){try{var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}catch(e){return '';}}
+
+function toast(m){try{var t=$('toast');if(!t)return;t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}catch(e){}}
+function load(){try{var r=localStorage.getItem(K);if(r){var o=JSON.parse(r);if(o&&typeof o==='object'){for(var k in S){if(o[k]!==undefined)S[k]=o[k];}}}}catch(e){}
+ if(!Array.isArray(S.entries))S.entries=[];if(!Array.isArray(S.glasses))S.glasses=[];
+ if(!Array.isArray(S.customTheaters))S.customTheaters=[];
+ if(!S.theaterInfo||typeof S.theaterInfo!=='object'||Array.isArray(S.theaterInfo))S.theaterInfo={};
+ S.customTheaters=S.customTheaters.map(function(c){return {n:c&&c.n,r:normRegion(c&&c.r)};}).filter(function(c){return c.n;});
+ S.entries=S.entries.filter(function(e){return e&&typeof e==='object';});
+ S.region=normRegion(S.region);}
+function save(){try{localStorage.setItem(K,JSON.stringify(S));return true;}catch(e){toast('⚠ 保存できませんでした');return false;}}
+function opt(sel,v,t){var o=document.createElement('option');o.value=v;o.textContent=t;sel.appendChild(o);}
+function fill(id,arr,fn){var s=$(id);if(!s)return;s.innerHTML='';arr.forEach(function(a){opt(s,a,fn?fn(a):a);});}
+function isCustom(n,r){return S.customTheaters.some(function(c){return c.n===n&&c.r===r;});}
+function dl(id,arr){var d=$(id);if(!d)return;d.innerHTML='';var seen={};arr.forEach(function(v){if(!v||seen[v])return;seen[v]=1;var o=document.createElement('option');o.value=v;d.appendChild(o);});}
+function titles(){var t=[];S.entries.forEach(function(e){if(e.title&&t.indexOf(e.title)<0)t.push(e.title);});return t;}
+
+function setMode(m){
+ mode=m;$('pinBox').hidden=(m!=='pin');$('rangeBox').hidden=(m!=='range');
+ var a=$('mPin'),b=$('mRange');
+ a.setAttribute('aria-pressed',m==='pin'?'true':'false');a.textContent=(m==='pin'?'✓ ':'')+'📍 ピンポイント（この1席）';
+ b.setAttribute('aria-pressed',m==='range'?'true':'false');b.textContent=(m==='range'?'✓ ':'')+'🗺 エリア（この辺ならOK）';
+ $('modeHint').textContent=m==='pin'?'「この1席！」を特定して記録します。例：G列 12番':'「この辺ならどこに座っても観やすい！」というベストエリアを記録します。例：H〜L列 ／ 10〜18番';
+}
+function theaterName(){var t=$('theater').value;return t===MAN?$('manual').value.trim():t;}
+function loadInfo(){
+ var n=theaterName(),i=(n&&S.theaterInfo[n])||{};
+ $('toilet').value=i.toilet||'';$('crowd').value=i.crowd||'';
+ if(i.toilet||i.crowd)$('infoBox').open=true;
+}
+function putInfo(){
+ var n=theaterName();if(!n)return false;
+ var t=$('toilet').value.trim(),c=$('crowd').value.trim();
+ if(t||c||S.theaterInfo[n])S.theaterInfo[n]={toilet:t,crowd:c};
+ return true;
+}
+function syncMan(){
+ var t=$('theater'),r=$('region');if(!t||!r)return;
+ $('manualBox').hidden=(t.value!==MAN);
+ $('delTh').hidden=!isCustom(t.value,r.value);
+ loadInfo();
+}
+function fillTheaters(sel){
+ var r=$('region').value,t=$('theater');t.innerHTML='';
+ var all=flat(r);
+ (PRE[r]||[]).forEach(function(g){
+  var og=document.createElement('optgroup');og.label=g[0];t.appendChild(og);
+  g[1].forEach(function(x){opt(og,x,x);});
+ });
+ var cu=S.customTheaters.filter(function(c){return c.r===r&&all.indexOf(c.n)<0;});
+ if(cu.length){var gc=document.createElement('optgroup');gc.label='★ 手入力した劇場';t.appendChild(gc);cu.forEach(function(c){opt(gc,c.n,'★ '+c.n);});}
+ opt(t,MAN,'✏ 劇場名を手入力する');
+ if(sel){
+  if(all.indexOf(sel)>=0||cu.some(function(c){return c.n===sel;})){t.value=sel;}
+  else{t.value=MAN;$('manual').value=sel;}
+ }
+ syncMan();
+}
+function fillGlass(sel){
+ var s=$('glass');s.innerHTML='';
+ opt(s,'','（選ばない）');opt(s,'肉眼','使わなかった（肉眼）');
+ S.glasses.forEach(function(g){opt(s,g,'🔭 '+g);});
+ if(sel&&sel!=='肉眼'&&S.glasses.indexOf(sel)<0)opt(s,sel,'🔭 '+sel);
+ s.value=sel||'';
+}
+function renderGlasses(){
+ var box=$('gList');box.innerHTML='';
+ if(!S.glasses.length){var p=document.createElement('p');p.className='hint';p.textContent='まだ登録がありません。';box.appendChild(p);return;}
+ S.glasses.forEach(function(g,i){
+  var d=document.createElement('div');d.className='gl';
+  var s=document.createElement('span');s.textContent='🔭 '+g;
+  var b=document.createElement('button');b.textContent='🗑';b.setAttribute('aria-label',g+'を削除');
+  b.onclick=function(){S.glasses.splice(i,1);save();renderGlasses();fillGlass($('glass').value);};
+  d.appendChild(s);d.appendChild(b);box.appendChild(d);});
+}
+function clearRange(){['rf','rt','nf','nt'].forEach(function(id){$(id).value='';});}
+function resetForm(){
+ editId=null;['title','special','aisleMemo','glassMemo','memo','manual'].forEach(function(id){$(id).value='';});
+ $('date').value=today();$('slot').value=SLOT[0];$('floor').value='';$('cls').value='';$('aisle').value='';$('row').value='';$('num').value='';
+ clearRange();fillGlass('');$('save').textContent='💾 観劇カルテを記録';$('cancel').hidden=true;
+}
+function tab(a){$('secAdd').hidden=!a;$('secList').hidden=a;$('tabAdd').classList.toggle('on',a);$('tabList').classList.toggle('on',!a);if(!a)renderList();}
+
+function saveEntry(){
+ try{
+  var r=$('region').value,th=theaterName(),ti=$('title').value.trim();
+  if(!ti){toast('作品名を入力してください');return;}
+  if(!th){toast('劇場を選ぶか、劇場名を入力してください');return;}
+  var e={id:editId||String(Date.now()),region:r,theater:th,title:ti,date:$('date').value,slot:$('slot').value,
+   floor:$('floor').value,cls:$('cls').value,special:$('special').value.trim(),mode:mode,
+   aisle:$('aisle').value,aisleMemo:$('aisleMemo').value.trim(),glass:$('glass').value,glassMemo:$('glassMemo').value.trim(),
+   memo:$('memo').value.trim(),ts:Date.now()};
+  if(mode==='range'){
+   var rr=norm($('rf').value,$('rt').value,ROWL),nn=norm($('nf').value,$('nt').value,NUMS);
+   if(!rr[0]&&!nn[0]){toast('列か番号のエリアを選んでください');return;}
+   e.rowFrom=rr[0];e.rowTo=rr[1];e.numFrom=nn[0];e.numTo=nn[1];e.row='';e.num='';
+  }else{e.row=$('row').value;e.num=$('num').value;}
+  if(flat(r).indexOf(th)<0&&!isCustom(th,r))S.customTheaters.push({n:th,r:r});
+  putInfo();
+  if(editId){S.entries=S.entries.map(function(x){return x.id===editId?e:x;});}else S.entries.unshift(e);
+  S.region=r;
+  if(save()){toast('✅ 記録しました');resetForm();fillTheaters(th);dl('titleList',titles());}
+ }catch(err){toast('⚠ エラーが起きました');}
+}
+function allText(e){
+ return [e.title,e.theater,e.date,e.slot,e.floor,e.cls,e.special,seatText(e),e.aisle,e.aisleMemo,e.glass,e.glassMemo,e.memo].join(' ').toLowerCase();
+}
+function renderList(){
+ var box=$('list');if(!box)return;box.innerHTML='';
+ try{
+  var q=($('q').value||'').toLowerCase(),f=$('ftitle').value;
+  var arr=S.entries.filter(function(e){
+   if(f&&e.title!==f)return false;
+   return !q||allText(e).indexOf(q)>=0;});
+  arr.sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||(b.ts||0)-(a.ts||0);});
+  if(!arr.length){var p=document.createElement('p');p.className='empty';p.textContent=S.entries.length?'🔍 見つかりませんでした':'🎟 まだ記録がありません';box.appendChild(p);return;}
+  arr.forEach(function(e){
+   var c=document.createElement('div');c.className='card';
+   var h=document.createElement('h3');h.textContent='🎭 '+(e.title||'（作品名なし）');c.appendChild(h);
+   var d=document.createElement('div');d.className='sm';d.textContent='📅 '+(e.date||'日付なし')+(e.slot?' '+e.slot:'')+'　🏛 '+e.theater;c.appendChild(d);
+   var s=document.createElement('div');s.className='seat';s.textContent=(e.mode==='range'?'🗺 ':'💺 ')+(e.floor?e.floor+' ':'')+seatText(e);c.appendChild(s);
+   if(e.cls){var t1=document.createElement('span');t1.className='tag';t1.textContent=e.cls;c.appendChild(t1);}
+   if(e.special){var t2=document.createElement('span');t2.className='tag sp';t2.textContent='✨ '+e.special;c.appendChild(t2);}
+   if(e.aisle||e.aisleMemo){var a1=document.createElement('div');a1.className='memo';a1.textContent='🚪 '+[e.aisle,e.aisleMemo].filter(Boolean).join('／');c.appendChild(a1);}
+   if(e.glass||e.glassMemo){var g=document.createElement('div');g.className='memo';g.textContent='🔭 '+[e.glass,e.glassMemo].filter(Boolean).join('：');c.appendChild(g);}
+   if(e.memo){var m=document.createElement('div');m.className='memo';m.textContent='📝 '+e.memo;c.appendChild(m);}
+   var a=document.createElement('div');a.className='acts';
+   var b1=document.createElement('button');b1.textContent='✏ 編集';b1.onclick=function(){startEdit(e);};
+   var b2=document.createElement('button');b2.textContent='🗑 削除';b2.onclick=function(){
+    var ok=true;try{ok=confirm('この記録を削除しますか？');}catch(x){}
+    if(ok){S.entries=S.entries.filter(function(x){return x.id!==e.id;});save();filterSel();renderList();dl('titleList',titles());toast('削除しました');}};
+   a.appendChild(b1);a.appendChild(b2);c.appendChild(a);box.appendChild(c);});
+ }catch(err){box.textContent='表示エラーが起きました';}
+}
+function startEdit(e){
+ editId=e.id;tab(true);
+ $('region').value=normRegion(e.region);fillTheaters(e.theater);
+ $('title').value=e.title||'';$('date').value=e.date||'';$('slot').value=e.slot||SLOT[0];
+ $('floor').value=e.floor||'';$('cls').value=e.cls||'';$('special').value=e.special||'';
+ $('aisle').value=e.aisle||'';$('aisleMemo').value=e.aisleMemo||'';
+ fillGlass(e.glass||'');$('glassMemo').value=e.glassMemo||'';$('memo').value=e.memo||'';
+ clearRange();
+ if(e.mode==='range'){setMode('range');$('rf').value=e.rowFrom||'';$('rt').value=e.rowTo||'';$('nf').value=e.numFrom||'';$('nt').value=e.numTo||'';}
+ else{setMode('pin');$('row').value=e.row||'';$('num').value=e.num||'';}
+ $('save').textContent='💾 更新する';$('cancel').hidden=false;window.scrollTo(0,0);
+}
+function filterSel(){var s=$('ftitle');if(!s)return;var v=s.value;s.innerHTML='';opt(s,'','すべて');titles().forEach(function(n){opt(s,n,n);});s.value=v;}
+
+function initUI(){
+ fill('region',REG);$('region').value=S.region;
+ fill('slot',SLOT);
+ fill('floor',FLOOR,function(v){return v||'（未選択）';});
+ fill('cls',CLS,function(v){return v||'（未選択）';});
+ fill('aisle',AISLE,function(v){return v||'（未選択）';});
+ fill('row',[''].concat(ROWL),function(v){return v?v+'列':'列を選ぶ';});
+ fill('num',[''].concat(NUMS),function(v){return v?v+'番':'番号を選ぶ';});
+ var rl=function(v){return v?v+'列':'指定なし';},nl=function(v){return v?v+'番':'指定なし';};
+ fill('rf',[''].concat(ROWL),rl);fill('rt',[''].concat(ROWL),rl);
+ fill('nf',[''].concat(NUMS),nl);fill('nt',[''].concat(NUMS),nl);
+ $('date').value=today();
+ fillTheaters();fillGlass('');filterSel();dl('titleList',titles());setMode('pin');
+}
+function bind(){
+ $('region').onchange=function(){S.region=$('region').value;save();fillTheaters();};
+ $('theater').onchange=syncMan;$('manual').oninput=loadInfo;
+ $('mPin').onclick=function(){setMode('pin');};$('mRange').onclick=function(){setMode('range');};
+ $('saveInfo').onclick=function(){if(!putInfo()){toast('劇場を選んでください');return;}if(save())toast('🏛 劇場情報を保存しました');};
+ $('delTh').onclick=function(){
+  var n=$('theater').value,r=$('region').value;
+  S.customTheaters=S.customTheaters.filter(function(c){return !(c.n===n&&c.r===r);});
+  save();fillTheaters();toast('履歴から削除しました（記録は残ります）');};
+ $('btnGlass').onclick=function(){renderGlasses();$('mGlass').classList.add('show');};
+ $('gAdd').onclick=function(){var v=$('gName').value.trim();if(!v)return;
+  if(S.glasses.indexOf(v)>=0){toast('登録済みです');return;}
+  if(S.glasses.length>=20){toast('登録は20件までです');return;}
+  S.glasses.push(v);save();$('gName').value='';renderGlasses();fillGlass(v);};
+ $('tabAdd').onclick=function(){tab(true);};$('tabList').onclick=function(){filterSel();tab(false);};
+ $('save').onclick=saveEntry;$('cancel').onclick=function(){resetForm();fillTheaters();};
+ $('q').oninput=renderList;$('ftitle').onchange=renderList;
+ $('btnHelp').onclick=function(){$('mHelp').classList.add('show');};
+ $('btnSet').onclick=function(){$('passOn').checked=!!S.passOn;$('passIn').value='';$('mSet').classList.add('show');};
+ Array.prototype.forEach.call(document.querySelectorAll('[data-close]'),function(b){b.onclick=function(){var m=$(b.getAttribute('data-close'));if(m)m.classList.remove('show');};});
+ $('setSave').onclick=function(){
+  var on=$('passOn').checked,v=$('passIn').value.trim();
+  if(on){if(v){if(!/^\d{4}$/.test(v)){toast('数字4桁で入力してください');return;}S.pass=v;}
+   if(!S.pass){toast('コードを入力してください');return;}S.passOn=true;}
+  else{S.passOn=false;S.pass='';}
+  if(save()){toast(on?'🔒 ロックをONにしました':'🔓 ロックをOFFにしました');$('mSet').classList.remove('show');}};
+ $('unlockBtn').onclick=function(){if($('unlockIn').value===S.pass){$('lock').classList.remove('show');$('unlockIn').value='';$('lockMsg').textContent='';}
+  else{$('lockMsg').textContent='❌ コードが違います';}};
+}
+function pwa(){
+ try{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});}catch(e){}
+ try{
+  var sa=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  var show=function(){if(S.installDismissed||sa)return;$('inst').classList.add('show');};
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;setTimeout(show,1200);});
+  if(/iphone|ipad/i.test(navigator.userAgent)&&!sa){$('instTxt').textContent='共有ボタンから「ホーム画面に追加」でアプリとして使えます';$('instGo').hidden=true;setTimeout(show,1500);}
+  $('instGo').onclick=function(){if(dp){dp.prompt();dp=null;}$('inst').classList.remove('show');};
+  $('instX').onclick=function(){$('inst').classList.remove('show');S.installDismissed=true;save();};
+ }catch(e){}
+}
+try{load();initUI();bind();pwa();if(S.passOn&&S.pass)$('lock').classList.add('show');}
+catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:1rem">読み込みエラー。ページを再読み込みしてください。</p>');}
+});
+</script>
+<footer style="text-align: center; font-size: 0.75rem; color: #888; margin-top: 3rem; padding: 1rem 0.5rem; line-height: 1.5;">
+  <p style="margin-bottom: 0.5rem;">【ご利用について】</p>
+  <p style="margin-bottom: 0.5rem;">本アプリの利用に伴うトラブルやデータ損失等について、開発者は一切の責任を負いかねます。</p>
+  <p style="margin-bottom: 0.5rem;">ご意見・不具合のご報告は X（<a href="https://x.com/lblt_labo" target="_blank" rel="noopener" style="color: #666; text-decoration: underline;">@lblt_labo</a>）までお願いいたします。</p>
+  <p style="margin-top: 0.5rem;"><a href="https://ofuse.me/lbltlabo/letter" target="_blank" rel="noopener noreferrer" style="color: #666; text-decoration: underline;">☕️ 開発者を応援する / メッセージを送る</a></p>
+</footer>
+</body>
+</html>
