@@ -26,7 +26,7 @@ h1{font-size:1.15rem;margin:0;color:var(--accl)}h1 small{display:block;font-size
 button,select,input,textarea{font:inherit;color:inherit}
 .ib{min-width:44px;min-height:44px;border-radius:50%;border:2px solid var(--accl);background:var(--panel);font-size:1.1rem;margin-left:.3rem;cursor:pointer}
 nav{display:flex;gap:.4rem;padding:0 .8rem}
-nav button{flex:1;min-height:48px;border:2px solid var(--line);background:var(--panel);border-radius:10px 10px 0 0;font-weight:700;cursor:pointer}
+nav button{flex:1;font-size:.82rem;padding:0 .2rem;min-height:48px;border:2px solid var(--line);background:var(--panel);border-radius:10px 10px 0 0;font-weight:700;cursor:pointer}
 nav button.on{background:var(--acc);color:#fff;border-color:var(--accl)}
 main{padding:.8rem;max-width:560px;margin:0 auto}
 .ticket{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:.9rem}
@@ -73,7 +73,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <div><button class="ib" id="btnSet" aria-label="設定">⚙</button><button class="ib" id="btnHelp" aria-label="使い方">？</button></div>
 </header>
 <p class="sub">劇場の座席体験と観劇メモを記録できるマイ・カルテ</p>
-<nav role="tablist"><button id="tabAdd" class="on" role="tab">＋ 記録する</button><button id="tabList" role="tab">📒 マイ・カルテ</button></nav>
+<nav role="tablist"><button id="tabAdd" class="on" role="tab">＋ 記録する</button><button id="tabList" role="tab">📒 マイ・カルテ</button><button id="tabToilet" role="tab">🚻 トイレメモ</button></nav>
 <main>
 <section id="secAdd" class="ticket">
 <label for="title">🎫 作品名（演目）</label>
@@ -98,7 +98,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
  <label for="toilet">トイレ情報メモ</label>
  <textarea id="toilet" maxlength="300" placeholder="例：穴場は3階西側のトイレ。個室は1階が多め。幕間は1階ロビーが長蛇の列、開演前に済ませるのがおすすめ。"></textarea>
  <button type="button" class="btn sub2" id="saveInfo">🚻 この劇場のメモを保存</button>
- <p class="hint">劇場ごとに保存され、同じ劇場を選ぶといつでも編集・参照できます。観劇カルテの一覧にも表示されます。</p>
+ <p class="hint">劇場ごとに保存され、同じ劇場を選ぶといつでも編集・参照できます。観劇カルテの一覧にも表示されます。「🚻 トイレメモ」タブで一覧表示・検索・編集もできます。</p>
 </details>
 
 <div class="row2"><div><label for="floor">階数</label><select id="floor"></select></div>
@@ -135,6 +135,20 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <label for="ftitle">作品名で絞り込み</label><select id="ftitle"></select>
 <div id="list" style="margin-top:.8rem"></div>
 </section>
+<section id="secToilet" hidden>
+<input type="search" id="tq" placeholder="🔍 劇場名・メモで検索" aria-label="トイレメモ検索">
+<button class="btn sub2" id="tAddBtn" style="margin-top:.6rem">＋ 劇場のトイレメモを追加</button>
+<div id="tEdit" class="ticket" hidden style="margin-top:.8rem">
+ <label for="tName">劇場名</label>
+ <input type="text" id="tName" list="theaterNames" maxlength="40" autocomplete="off" placeholder="例：日生劇場">
+ <datalist id="theaterNames"></datalist>
+ <label for="tMemo">🚻 トイレ情報メモ</label>
+ <textarea id="tMemo" maxlength="300" placeholder="例：穴場は3階西側。個室は1階が多め。幕間は1階ロビーが長蛇の列。"></textarea>
+ <button class="btn" id="tSave">💾 保存</button>
+ <button class="btn sub2" id="tCancel">キャンセル</button>
+</div>
+<div id="tList" style="margin-top:.8rem"></div>
+</section>
 </main>
 
 <div class="modal" id="mGlass"><div class="box"><h2>🔭 マイ・オペラグラス</h2>
@@ -146,6 +160,7 @@ summary{min-height:44px;display:flex;align-items:center;font-weight:700;color:va
 <li>作品名、観劇日、公演区分（マチネ／ソワレ）、開場・開演時間を入力します。開場から開演までの時間は、お手洗いや立ち回りの目安になります。作品名は次回から候補に出ます。</li>
 <li>地方ブロックから劇場を選びます。リストにない劇場は「✏ 劇場名を手入力する」で追加でき、次回から「★」付きで選べます。</li>
 <li>よく行く劇場は「☆ この劇場をお気に入りに追加」で最大10件まで「★ マイ劇場」に登録できます。入力画面の上部に並び、ワンタップで劇場を選べます。もう一度押すと解除できます。</li>
+<li>「🚻 トイレメモ」タブでは、登録した劇場別のトイレメモを一覧で見たり、検索・編集・追加できます。</li>
 <li>「🚻 劇場のトイレ情報メモ」に、穴場の位置・個室の多さ・幕間の混雑などを劇場ごとに残せます。次回同じ劇場を選ぶと表示されます。</li>
 <li>階数と座席区分を選び、グランドサークルなど名前に当てはまらない席は「特殊座席」に自由に書き込めます。</li>
 <li>座席は2つの方法から選べます。
@@ -348,7 +363,66 @@ function resetForm(){
  $('date').value=today();$('slot').value=SLOT[0];$('floor').value='';$('cls').value='';$('aisle').value='';$('row').value='';$('num').value='';
  clearRange();fillGlass('');$('save').textContent='💾 観劇カルテを記録';$('cancel').hidden=true;timeHint();
 }
-function tab(a){$('secAdd').hidden=!a;$('secList').hidden=a;$('tabAdd').classList.toggle('on',a);$('tabList').classList.toggle('on',!a);if(!a)renderList();}
+var curTab='add';
+function tab(w){
+ var m={add:['secAdd','tabAdd'],list:['secList','tabList'],toilet:['secToilet','tabToilet']};
+ Object.keys(m).forEach(function(k){$(m[k][0]).hidden=(k!==w);$(m[k][1]).classList.toggle('on',k===w);});
+ if(w==='list')renderList();
+ if(w==='toilet')renderToilet();
+ if(w==='add'&&curTab==='toilet')loadInfo();
+ curTab=w;
+}
+var tEditing=null;
+function theaterNames(){
+ var a=[];REG.forEach(function(r){a=a.concat(flat(r));});
+ S.customTheaters.forEach(function(c){a.push(c.n);});S.favs.forEach(function(f){a.push(f.n);});S.entries.forEach(function(e){a.push(e.theater);});
+ return a;
+}
+function openTEdit(n){
+ tEditing=n||'';$('tEdit').hidden=false;
+ $('tName').value=n||'';$('tMemo').value=n?(S.theaterInfo[n]||''):'';
+ dl('theaterNames',theaterNames());
+ try{$('tEdit').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}
+}
+function saveT(){
+ try{
+  var n=$('tName').value.trim(),t=$('tMemo').value.trim();
+  if(!n){toast('劇場名を入力してください');return;}
+  if(!t){toast('メモを入力してください（削除は一覧の🗑から）');return;}
+  if(n!==tEditing&&S.theaterInfo[n]!==undefined){toast('同じ劇場名のメモがあります。一覧の✏から更新してください');return;}
+  if(tEditing&&n!==tEditing)delete S.theaterInfo[tEditing];
+  S.theaterInfo[n]=t;
+  if(save()){toast('🚻 保存しました');$('tEdit').hidden=true;tEditing=null;renderToilet();}
+ }catch(err){toast('⚠ エラーが起きました');}
+}
+function goRecord(n){
+ var r=findRegion(n);
+ if(!r){S.customTheaters.forEach(function(c){if(c.n===n)r=c.r;});}
+ $('region').value=normRegion(r||$('region').value);S.region=$('region').value;
+ fillTheaters(n);tab('add');window.scrollTo(0,0);
+}
+function renderToilet(){
+ var box=$('tList');if(!box)return;box.innerHTML='';
+ try{
+  var q=($('tq').value||'').toLowerCase(),all=Object.keys(S.theaterInfo);
+  var names=all.filter(function(n){return !q||(n+' '+S.theaterInfo[n]).toLowerCase().indexOf(q)>=0;});
+  names.sort(function(a,b){return a.localeCompare(b,'ja');});
+  if(!names.length){var p=document.createElement('p');p.className='empty';p.textContent=all.length?'🔍 見つかりませんでした':'🚻 まだトイレメモがありません。「＋ 劇場のトイレメモを追加」か、記録画面の「劇場のトイレ情報メモ」から登録できます。';box.appendChild(p);return;}
+  names.forEach(function(n){
+   var c=document.createElement('div');c.className='card';
+   var h=document.createElement('h3');h.textContent='🏛 '+n;c.appendChild(h);
+   var cnt=S.entries.filter(function(e){return e.theater===n;}).length;
+   if(cnt){var sm=document.createElement('div');sm.className='sm';sm.textContent='📒 観劇カルテ '+cnt+'件';c.appendChild(sm);}
+   var m=document.createElement('div');m.className='memo';m.textContent='🚻 '+S.theaterInfo[n];c.appendChild(m);
+   var a=document.createElement('div');a.className='acts';
+   var b1=document.createElement('button');b1.textContent='✏ 編集';b1.onclick=function(){openTEdit(n);};
+   var b2=document.createElement('button');b2.textContent='📝 ここで記録';b2.onclick=function(){goRecord(n);};
+   var b3=document.createElement('button');b3.textContent='🗑 削除';b3.onclick=function(){
+    var ok=true;try{ok=confirm('「'+n+'」のトイレメモを削除しますか？');}catch(x){}
+    if(ok){delete S.theaterInfo[n];save();renderToilet();toast('削除しました');}};
+   a.appendChild(b1);a.appendChild(b2);a.appendChild(b3);c.appendChild(a);box.appendChild(c);});
+ }catch(err){box.textContent='表示エラーが起きました';}
+}
 
 function saveEntry(){
  try{
@@ -404,7 +478,7 @@ function renderList(){
  }catch(err){box.textContent='表示エラーが起きました';}
 }
 function startEdit(e){
- editId=e.id;tab(true);
+ editId=e.id;tab('add');
  $('region').value=findRegion(e.theater)||normRegion(e.region);fillTheaters(e.theater);
  $('title').value=e.title||'';$('date').value=e.date||'';$('slot').value=e.slot||SLOT[0];$('openT').value=e.openT||'';$('startT').value=e.startT||'';
  $('floor').value=e.floor||'';$('cls').value=e.cls||'';$('special').value=e.special||'';
@@ -454,7 +528,8 @@ function bind(){
   if(S.glasses.indexOf(v)>=0){toast('登録済みです');return;}
   if(S.glasses.length>=20){toast('登録は20件までです');return;}
   S.glasses.push(v);save();$('gName').value='';renderGlasses();fillGlass(v);};
- $('tabAdd').onclick=function(){tab(true);};$('tabList').onclick=function(){filterSel();tab(false);};
+ $('tabAdd').onclick=function(){tab('add');};$('tabList').onclick=function(){filterSel();tab('list');};$('tabToilet').onclick=function(){tab('toilet');};
+ $('tAddBtn').onclick=function(){openTEdit('');};$('tCancel').onclick=function(){$('tEdit').hidden=true;tEditing=null;};$('tSave').onclick=saveT;$('tq').oninput=renderToilet;
  $('save').onclick=saveEntry;$('cancel').onclick=function(){resetForm();fillTheaters();};
  $('q').oninput=renderList;$('ftitle').onchange=renderList;
  $('btnHelp').onclick=function(){$('mHelp').classList.add('show');};
